@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ERP Technical Assessment - Masar Petroleum</title>
+<style>
+  :root {
+    --bg: #eef3fa;
+    --card: #ffffff;
+    --ink: #16202e;
+    --muted: #5e6b7e;
+    --line: #d8e0ea;
+    --accent: #0877fb;
+    --accent-dark: #045fd6;
+    --accent-soft: #e4f0ff;
+    --critical: #e04646;
+    --high: #ef8a00;
+    --medium: #0877fb;
+    --low: #7a8694;
+    --ok: #15a05f;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 15px;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner {
+    max-width: 960px; margin: 0 auto; padding: 12px 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .brand .logo {
+    width: 40px; height: 40px; border-radius: var(--radius); flex: none;
+    background: var(--accent);
+    color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 17px;
+  }
+  .brand h1 { font-size: 15px; margin: 0; line-height: 1.2; }
+  .brand p { font-size: 12px; margin: 0; color: var(--muted); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); padding: 10px 16px; border-radius: var(--radius);
+    font-weight: 600; white-space: nowrap;
+  }
+  button:hover { background: #f2f6fc; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-dark); }
+  .progress-wrap { width: 100%; }
+  .progress-row { max-width: 960px; margin: 0 auto; padding: 0 20px 10px;
+    display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--muted); }
+  .bar { flex: 1; height: 7px; background: #d8e0ea; border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0%;
+    background: var(--accent); transition: width .25s linear; }
+
+  /* ---------- Layout ---------- */
+  .wrap { max-width: 960px; margin: 0 auto; padding: 26px 20px 90px; }
+
+  .hero {
+    background: var(--accent);
+    color: #fff; border-radius: var(--radius); padding: 30px 28px;
+  }
+  .hero h2 { margin: 0 0 6px; font-size: 24px; }
+  .hero .sub { opacity: .92; font-size: 15px; }
+  .hero .meta { margin-top: 16px; display: flex; gap: 18px 28px; flex-wrap: wrap; font-size: 13px; opacity: .95; }
+  .hero .meta b { display: block; opacity: .7; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .notice {
+    margin-top: 16px; background: #fff8e6; border: 1px solid #f0d894;
+    border-radius: var(--radius); padding: 14px 18px; font-size: 13.5px; color: #6b5618;
+  }
+  .notice b { color: #715a12; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px; margin-top: 18px;
+  }
+  .card h3 { margin: 0 0 4px; font-size: 16px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  label.lbl { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; display: block; margin-bottom: 5px; }
+  input.txt, textarea {
+    width: 100%; font: inherit; color: var(--ink); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 10px 12px; background: #fff; resize: vertical;
+  }
+  input.txt:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+  .section-head {
+    margin: 34px 0 4px; padding: 10px 4px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 2px solid var(--accent); color: var(--accent-dark);
+  }
+  .section-head .sidx { background: var(--accent); color: #fff; font-weight: 800; font-size: 13px;
+    width: 30px; height: 30px; border-radius: var(--radius); display: grid; place-items: center; flex: none; }
+  .section-head h2 { margin: 0; font-size: 17px; }
+
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; margin-top: 14px; scroll-margin-top: 120px; }
+  .q.answered { border-left: 4px solid var(--ok); }
+  .q:focus-within { border-color: var(--accent); }
+  .q-top { display: flex; align-items: flex-start; gap: 12px; }
+  .q-num { flex: none; background: var(--accent-soft); color: var(--accent-dark); font-weight: 800;
+    min-width: 34px; height: 30px; padding: 0 8px; border-radius: var(--radius); display: grid; place-items: center; font-size: 13px; }
+  .q-title { font-weight: 700; font-size: 15.5px; margin: 2px 0 0; flex: 1; }
+  .badge { flex: none; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+    padding: 4px 9px; border-radius: var(--radius); color: #fff; }
+  .badge.critical { background: var(--critical); }
+  .badge.high { background: var(--high); }
+  .badge.medium { background: var(--medium); }
+  .badge.low { background: var(--low); }
+
+  .q-text { margin: 12px 0 0; background: #f4f7fb; border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 12px 14px; font-size: 14.5px; }
+  .q-purpose { margin: 8px 0 0; font-size: 13px; color: var(--muted); font-style: italic; }
+
+  .status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 14px 0 8px; }
+  .status-row .slabel { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .seg label { padding: 6px 12px; font-size: 13px; cursor: pointer; border-right: 1px solid var(--line); background: #fff; }
+  .seg label:last-child { border-right: none; }
+  .seg input { display: none; }
+  .seg input:checked + span { font-weight: 700; }
+  .seg label:has(input:checked) { background: var(--accent); color: #fff; }
+
+  textarea.resp { min-height: 92px; margin-top: 0; border-radius: 0 0 var(--radius) var(--radius);
+    border-top: 0; display: block; }
+
+  /* ---------- Markdown editor ---------- */
+  .md-editor { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; }
+  .md-editor:focus-within { border-color: var(--accent); }
+  .md-toolbar { display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+    background: #f4f7fb; border-bottom: 1px solid var(--line); padding: 6px 8px; }
+  .md-btn { padding: 6px 9px; font-size: 12.5px; line-height: 1; border: 1px solid transparent;
+    background: transparent; color: var(--ink); border-radius: 6px; font-weight: 600; min-width: 30px; }
+  .md-btn:hover { background: #e2eaf4; }
+  .md-btn:active { background: var(--accent-soft); }
+  .md-btn b, .md-btn i { font-weight: 800; }
+  .md-btn i { font-style: italic; }
+  .md-div { width: 1px; height: 18px; background: var(--line); margin: 0 5px; }
+  .md-spacer { flex: 1; }
+  .md-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: #fff; }
+  .md-tab { padding: 6px 14px; font-size: 12.5px; border: 0; background: #fff; color: var(--muted); font-weight: 700; border-radius: 0; }
+  .md-tab + .md-tab { border-left: 1px solid var(--line); }
+  .md-tab:hover { background: #eef3fa; }
+  .md-tab.active { background: var(--accent); color: #fff; }
+  .md-editor textarea.resp { border: 0; border-radius: 0; margin: 0; width: 100%; min-height: 110px; }
+  .md-editor textarea.resp:focus { box-shadow: none; }
+
+  /* Preview separated from the editor by a clear divider line */
+  .md-preview { border-top: 2px solid var(--accent); background: #fbfcfe; }
+  .md-pvhead { display: flex; align-items: center; gap: 7px; padding: 7px 14px;
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent-dark); background: var(--accent-soft); border-bottom: 1px solid var(--line); }
+  .md-pvhead .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .md-pvbody { padding: 12px 16px; min-height: 60px; font-size: 14.5px; }
+  .md-pvbody:empty::before { content: "Start typing to see the formatted preview."; color: var(--muted); font-style: italic; }
+  .md-pvbody > :first-child { margin-top: 0; }
+  .md-pvbody > :last-child { margin-bottom: 0; }
+  .md-pvbody h1, .md-pvbody h2, .md-pvbody h3 { margin: .6em 0 .3em; line-height: 1.25; }
+  .md-pvbody h1 { font-size: 1.4em; }
+  .md-pvbody h2 { font-size: 1.2em; }
+  .md-pvbody h3 { font-size: 1.05em; }
+  .md-pvbody p { margin: .5em 0; }
+  .md-pvbody ul, .md-pvbody ol { margin: .4em 0; padding-left: 1.4em; }
+  .md-pvbody li { margin: .2em 0; }
+  .md-pvbody blockquote { margin: .5em 0; padding: 4px 12px; border-left: 3px solid var(--accent); color: var(--muted); background: #f4f7fb; }
+  .md-pvbody code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: .92em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .md-pvbody pre { background: #f4f7fb; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; overflow:auto; }
+  .md-pvbody pre code { background: none; padding: 0; }
+  .md-pvbody a { color: var(--accent); }
+  .md-pvbody table { border-collapse: collapse; width: 100%; margin: .5em 0; font-size: .95em; }
+  .md-pvbody th, .md-pvbody td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+  .md-pvbody th { background: #f4f7fb; }
+  .md-pvbody hr { border: 0; border-top: 1px solid var(--line); margin: .8em 0; }
+
+  .imgwrap { margin-top: 14px; }
+  .imggrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 8px; }
+  .imggrid figure { margin: 0; background: #f4f7fb; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .imggrid img { width: 100%; height: 130px; object-fit: cover; display: block; background: #e2e8f0; }
+  .imggrid figcaption { font-size: 11.5px; color: var(--muted); padding: 6px 8px; text-align: center; }
+  .grouplabel { font-size: 12.5px; font-weight: 800; color: var(--accent-dark); text-transform: uppercase; letter-spacing: .04em; margin-top: 12px; }
+
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 11px 20px; border-radius: var(--radius); font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .footer-note { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+
+  @media (max-width: 760px) {
+    .imggrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 14.5px; }
+    .topbar-inner { padding: 10px 14px; gap: 10px; }
+    .brand .logo { width: 34px; height: 34px; font-size: 15px; }
+    .brand h1 { font-size: 13px; }
+    .brand p { font-size: 11px; }
+    .actions { width: 100%; }
+    .actions button { flex: 1; padding: 11px 10px; font-size: 13.5px; }
+    .progress-row { padding: 0 14px 10px; }
+    .wrap { padding: 18px 14px 80px; }
+    .hero { padding: 24px 18px; border-radius: 16px; }
+    .hero h2 { font-size: 20px; }
+    .hero .meta { gap: 12px 20px; }
+    .card { padding: 16px 16px; }
+    .field-grid { grid-template-columns: 1fr; }
+    .section-head { margin-top: 26px; }
+    .section-head h2 { font-size: 15.5px; }
+    .q { padding: 16px 15px; }
+    .q-top { flex-wrap: wrap; gap: 8px; }
+    .q-num { height: 28px; }
+    .q-title { font-size: 15px; flex-basis: calc(100% - 90px); }
+    .badge { order: 2; }
+    .status-row { gap: 6px; }
+    .seg { width: 100%; }
+    .seg label { flex: 1; text-align: center; padding: 10px 6px; }
+    .imggrid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .imggrid img { height: 110px; }
+    textarea.resp { min-height: 110px; }
+  }
+  @media (max-width: 380px) {
+    .imggrid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Print / PDF ---------- */
+  @page { size: A4; margin: 15mm 14mm 18mm; }
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body { background: #fff !important; font-size: 10.5pt; }
+    .topbar, .toast, .footer-note { display: none !important; }
+    .wrap { max-width: none; margin: 0; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+
+    /* Header becomes a clean letterhead */
+    .hero { background: #fff !important; color: #000 !important; border: 0;
+      border-bottom: 3px solid var(--accent); border-radius: 0; padding: 0 0 10px; margin: 0 0 6px; }
+    .hero h2 { font-size: 18pt; }
+    .hero .sub { opacity: 1; color: #333; }
+    .hero .meta { opacity: 1; color: #333; margin-top: 10px; }
+    .hero .meta b { opacity: 1; color: #666; }
+
+    .notice { background: #fff !important; border: 1px solid #bbb; color: #333 !important; border-radius: 0; }
+
+    .card, .q { border: 1px solid #c4ccd6; border-radius: 0; margin-top: 10px;
+      break-inside: avoid; page-break-inside: avoid; }
+    .card h3 { font-size: 12pt; }
+
+    .section-head { margin: 16px 0 2px; break-after: avoid; page-break-after: avoid; break-inside: avoid; }
+    .section-head h2 { font-size: 13pt; }
+    .section-head .sidx, .q-num { color: #fff !important; }
+
+    .q-title { font-size: 11.5pt; }
+    .q-text { background: #f2f5f9 !important; border: 1px solid #d4dbe4; }
+    .badge { color: #fff !important; border-radius: 3px; }
+
+    /* Show the chosen status clearly */
+    .seg label:has(input:checked) { background: var(--accent) !important; color: #fff !important; }
+
+    /* Answers: full text, no inner scrollbars */
+    textarea.resp { border: 1px solid #c4ccd6; min-height: 0; height: auto; overflow: visible;
+      white-space: pre-wrap; background: #fff !important; color: #000 !important; }
+    .md-toolbar { display: none !important; }
+    .md-editor { border: 1px solid #c4ccd6; border-radius: 0; }
+    .md-editor textarea.resp { border: 0; }
+    .md-editor.previewing textarea.resp { display: none; }
+    .md-preview { border-top: 1px solid #c4ccd6; background: #fff; }
+    .md-pvhead { display: none; }
+    .md-pvbody { padding: 6px 4px; }
+    .md-pvbody blockquote, .md-pvbody code, .md-pvbody pre, .md-pvbody th { background: #f2f5f9 !important; }
+
+    /* Images: show the full screenshot, grouped, never split across pages */
+    .imgwrap, .imggrid, .imggrid figure { break-inside: avoid; page-break-inside: avoid; }
+    .imggrid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .imggrid img { height: auto !important; max-height: 70mm; object-fit: contain; background: #fff; }
+    .imggrid figure { border: 1px solid #d4dbe4; }
+    .grouplabel { color: #000; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <h1>ERP Technical Assessment</h1>
+        <p>Masar Petroleum &middot; Senior Blockchain LLC</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="saveBtn">Save draft</button>
+      <button id="printBtn">Print / PDF</button>
+      <button id="exportBtn" class="primary">Download answers (.md)</button>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <span id="progText">0 of 55 answered</span>
+      <div class="bar"><i id="progBar"></i></div>
+      <span id="progPct">0%</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h2>ERP Technical Assessment Questionnaire</h2>
+    <div class="sub">Technical Knowledge Transfer &amp; System Assessment</div>
+    <div class="meta">
+      <div><b>Prepared by</b>Senior Blockchain LLC</div>
+      <div><b>Consultant</b>Milad Raeisi</div>
+      <div><b>System</b>Masar Petroleum ERP</div>
+    </div>
+    <div class="notice">
+      <b>Confidentiality Notice.</b> This questionnaire is part of the Masar Petroleum Digital Transformation initiative.
+      Your answers will be used only for technical evaluation, knowledge transfer, architecture review, and future ERP planning, and will be treated as confidential.
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Respondent details</h3>
+    <p style="margin:4px 0 0;color:var(--muted);font-size:13.5px;">
+      Please complete your details. Use <b>Save draft</b> to keep your progress in this browser, and <b>Download answers</b> to export a completed Markdown (.md) file you can attach and send back.
+    </p>
+    <div class="field-grid">
+      <div><label class="lbl">Full name</label><input class="txt" id="r_name" placeholder="Your name" /></div>
+      <div><label class="lbl">Company</label><input class="txt" id="r_company" placeholder="Company" /></div>
+      <div><label class="lbl">Role / title</label><input class="txt" id="r_role" placeholder="e.g. ERP Technical Lead" /></div>
+      <div><label class="lbl">Date</label><input class="txt" id="r_date" type="date" /></div>
+    </div>
+  </section>
+
+  <div id="form"></div>
+
+  <p class="footer-note">Thank you for your time and collaboration.</p>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- Questionnaire data ---------------- */
+const IMAGES = {
+  current: [
+    {src:"current/1.jpeg", cap:"Current ERP - Screen 1"},
+    {src:"current/2.png",  cap:"Current ERP - Screen 2"},
+    {src:"current/3.png",  cap:"Current ERP - Screen 3"}
+  ],
+  modern: [
+    {src:"erp/1.png",  cap:"Modern ERP - Example 1"},
+    {src:"erp/2.webp", cap:"Modern ERP - Example 2"},
+    {src:"erp/3.png",  cap:"Modern ERP - Example 3"},
+    {src:"erp/4.webp", cap:"Modern ERP - Example 4"},
+    {src:"erp/5.jpg",  cap:"Modern ERP - Example 5"},
+    {src:"erp/6.png",  cap:"Modern ERP - Example 6"},
+    {src:"erp/7.jpg",  cap:"Modern ERP - Example 7"}
+  ]
+};
+
+const SECTIONS = [
+ { title: "Section 1 - System Architecture & Technology", questions: [
+   {n:1, t:"Overall System Architecture", pri:"Critical",
+    q:`Please describe the overall ERP system architecture, including all major components and how they connect and communicate with each other.`,
+    p:`To understand the high-level design, the main building blocks, and how the system fits together.`},
+   {n:2, t:"Technology Stack", pri:"Critical",
+    q:`Please list the complete technology stack, including programming languages, frameworks, databases, third-party components, and development tools. Please also include version numbers.`,
+    p:`To understand all the technologies the solution depends on and whether any are outdated.`},
+   {n:3, t:"Application Architecture & Business Logic", pri:"Critical",
+    q:`Please explain how the application is layered (Presentation, Business, and Data layers) and where the business logic actually runs. Which business rules are configurable through settings, and which are hard-coded in the application or database?`,
+    p:`To understand how responsibilities are divided and how much effort future changes will require.`},
+   {n:4, t:"Desktop & Web ERP Relationship", pri:"High",
+    q:`Please explain the relationship between the Desktop ERP and the Web ERP. Do both share the same database and the same business logic, or are they separate?`,
+    p:`To understand how the two platforms work together and stay consistent.`},
+   {n:5, t:"Axpert Platform & Customizations", pri:"Critical",
+    q:`Please explain the role of the Axpert platform in the solution. Which parts are standard Axpert features, and which parts were custom-built or heavily customized for this project?`,
+    p:`To understand how much the system depends on the platform and how large the customization scope is.`}
+ ]},
+ { title: "Section 2 - Database & Data", questions: [
+   {n:6, t:"Database Architecture & Standards", pri:"Critical",
+    q:`Please describe the database architecture, including the database engine and version, schema organization, and the main design standards used (naming conventions, indexing strategy, constraints, and normalization level).`,
+    p:`To understand the database structure and the overall quality and consistency of its design.`},
+   {n:7, t:"Database Business Logic", pri:"High",
+    q:`Please describe the business logic that runs inside the database, such as stored procedures, functions, triggers, packages, and views. Roughly how much of the core logic lives in the database?`,
+    p:`To understand where critical business rules are executed and how maintainable they are.`},
+   {n:8, t:"Transaction & Concurrency Control", pri:"High",
+    q:`Please explain how the system handles database transactions and how it keeps data consistent if a multi-step process fails partway through. How does it handle several users editing the same record at the same time?`,
+    p:`To evaluate data integrity, rollback behavior, and concurrency handling.`},
+   {n:9, t:"Data Validation & Data Quality", pri:"High",
+    q:`Please explain how input data is checked before it is saved. Are there any known issues with data integrity, consistency, duplicates, or reconciliation today?`,
+    p:`To understand data quality controls and the reliability of the data.`},
+   {n:10, t:"Master Data Management", pri:"High",
+    q:`Please describe how master data is structured and controlled (for example: Chart of Accounts, AFE, Budget, Activity Codes, Items, Vendors, and Employees).`,
+    p:`To understand how core business data is organized and governed.`},
+   {n:11, t:"Data Volumes & System Sizing", pri:"High",
+    q:`Please share the current size of the system: approximate database size, the number of records in the largest tables, the average daily transaction volume, and the number of active and concurrent users.`,
+    p:`To understand the real scale of the system and plan for performance and growth.`},
+   {n:12, t:"Data Migration History", pri:"Medium",
+    q:`Please describe the major data migration activities completed since the project began. What problems came up, and how was the data checked for correctness afterwards?`,
+    p:`To understand past migration quality and any remaining data risks.`},
+   {n:13, t:"Production Data Correction Process", pri:"High",
+    q:`When a data problem happens in production, how is it fixed? Are corrections made through the application, or by changing the database directly? Please describe the full process and who approves it.`,
+    p:`To assess data governance, traceability, and operational risk.`},
+   {n:14, t:"Database Maintenance", pri:"Medium",
+    q:`Please describe routine database maintenance, such as index rebuilding, statistics updates, optimization, and health checks. How often are these done?`,
+    p:`To understand how the database is kept healthy over time.`}
+ ]},
+ { title: "Section 3 - Functional Modules & Features", questions: [
+   {n:15, t:"ERP Modules & Status", pri:"Critical",
+    q:`Please list all ERP modules and mark each one as completed, partially implemented, or still under development.`,
+    p:`To understand the current implementation status across the whole system.`},
+   {n:16, t:"Business Process Coverage", pri:"Critical",
+    q:`Please describe which business processes are currently fully supported by the ERP, which are partially supported, and which are still performed manually outside the ERP (using Excel, email, paper forms, or other systems). If available, please indicate the primary department responsible for each process.`,
+    p:`To understand the actual ERP adoption level, identify business processes that remain outside the system, and assess opportunities for future process automation.`},
+   {n:17, t:"Workflow Engine", pri:"High",
+    q:`Please explain how workflows are designed, configured, and maintained. Can workflows be changed through configuration, or do they require software development?`,
+    p:`To understand how flexible the workflow system is.`},
+   {n:18, t:"Notifications", pri:"Low",
+    q:`Please explain how notifications are created and delivered (for example: email, SMS, in-app alerts, or workflow alerts).`,
+    p:`To understand how the system communicates with users.`},
+   {n:19, t:"Reporting", pri:"High",
+    q:`Please explain how reports are built, customized, scheduled, and maintained. Which reports currently have performance problems?`,
+    p:`To understand reporting capabilities and known limitations.`},
+   {n:20, t:"Document Management", pri:"Medium",
+    q:`Please explain how documents and attachments are stored, indexed, secured, versioned, and backed up within the ERP.`,
+    p:`To evaluate document handling capabilities.`},
+   {n:21, t:"Localization & Multi-Currency", pri:"Medium",
+    q:`Please explain how the system handles multiple languages, multiple currencies, date and time zones, and any region-specific formatting or tax rules.`,
+    p:`To understand the system's readiness for different languages, currencies, and regions.`},
+   {n:22, t:"Mobile & Remote Access", pri:"Low",
+    q:`Can users access the ERP from mobile devices or from outside the office? Please explain what is supported and any security or performance limits.`,
+    p:`To understand mobile and remote access capabilities.`},
+   {n:23, t:"Known Functional Limitations", pri:"High",
+    q:`Please describe the current functional limitations or unfinished areas. Which business requirements cannot be supported today?`,
+    p:`To identify functional gaps that may affect future work.`}
+ ]},
+ { title: "Section 4 - Security & Access", questions: [
+   {n:24, t:"User & Access Management", pri:"Critical",
+    q:`Please explain how users, roles, permissions, and access rights are managed in the ERP.`,
+    p:`To assess the access control model.`},
+   {n:25, t:"Security Architecture", pri:"Critical",
+    q:`Please describe the security design, including authentication, authorization, password policies, encryption (in transit and at rest), and other security controls.`,
+    p:`To evaluate the overall security posture.`},
+   {n:26, t:"Audit Trail & Logging", pri:"High",
+    q:`Please explain how the system records user activity, data changes, approvals, and key events. Where are these logs stored, and which operations are fully auditable?`,
+    p:`To assess traceability, accountability, and troubleshooting ability.`},
+   {n:27, t:"Compliance & Regulatory Requirements", pri:"High",
+    q:`Please describe any compliance, regulatory, or industry standards the ERP must meet (for example: financial reporting, petroleum industry rules, or data protection). How does the system support these?`,
+    p:`To understand compliance obligations and how well the system meets them.`}
+ ]},
+ { title: "Section 5 - Integration", questions: [
+   {n:28, t:"Integration Architecture", pri:"High",
+    q:`Please list all systems integrated with the ERP and explain how each integration works (for example: API, direct database, file exchange, or web services).`,
+    p:`To understand external system dependencies and how data moves between them.`},
+   {n:29, t:"API Availability", pri:"High",
+    q:`Please describe all available APIs and integration services, including their purpose, format, and documentation status.`,
+    p:`To evaluate the system's integration capabilities.`},
+   {n:30, t:"External Dependencies & Scheduled Jobs", pri:"Medium",
+    q:`Please list all external systems, services, scheduled jobs, batch processes, and background tasks that the ERP needs in order to run normally.`,
+    p:`To understand operational dependencies and automated processes.`}
+ ]},
+ { title: "Section 6 - Infrastructure & Operations", questions: [
+   {n:31, t:"Production Infrastructure", pri:"High",
+    q:`Please describe the production infrastructure, including servers, web server (IIS) configuration, and overall deployment layout.`,
+    p:`To understand how the system is deployed and hosted.`},
+   {n:32, t:"Environment Management", pri:"Medium",
+    q:`Please describe the available environments (Development, Test, UAT, Production) and explain how configuration and data are kept in sync between them.`,
+    p:`To understand how changes are tested before reaching production.`},
+   {n:33, t:"System Availability & Monitoring", pri:"High",
+    q:`What is the expected uptime, and how are application health, errors, performance, and server resources monitored? Which tools are used?`,
+    p:`To understand operational reliability and monitoring maturity.`},
+   {n:34, t:"Performance & Stability", pri:"Critical",
+    q:`Please identify the main performance and stability problems affecting the ERP today (for example: slow pages, freezes, or "page unresponsive" messages) and explain their root causes. What has been done or is planned to fix them?`,
+    p:`To understand current bottlenecks, their causes, and the plan to resolve them.`},
+   {n:35, t:"Scalability & Capacity Planning", pri:"High",
+    q:`Can the current architecture support future growth in users, business units, and modules? How do you estimate future needs for storage, CPU, memory, and database growth?`,
+    p:`To assess long-term scalability and infrastructure planning.`},
+   {n:36, t:"Backup, Disaster Recovery & Business Continuity", pri:"Critical",
+    q:`Please explain the backup policy, how backups are tested and restored, and the disaster recovery strategy, including Recovery Time Objective (RTO) and Recovery Point Objective (RPO).`,
+    p:`To evaluate data safety and business continuity readiness.`}
+ ]},
+ { title: "Section 7 - Engineering & Governance", questions: [
+   {n:37, t:"Source Code Ownership", pri:"Critical",
+    q:`Please clarify who owns the source code. Is the complete source code available? Are there any third-party components or modules where the source code is not available?`,
+    p:`To understand maintenance limits and long-term ownership.`},
+   {n:38, t:"Development Process & Code Standards", pri:"High",
+    q:`Please explain your development lifecycle, version control strategy, testing process, and the coding standards, design patterns, and guidelines the team follows.`,
+    p:`To understand software engineering practices and code quality.`},
+   {n:39, t:"Change Management & Release Management", pri:"High",
+    q:`Please explain the full process for a change request, from analysis and development through testing, approval, deployment, and production release.`,
+    p:`To understand how changes are controlled and governed.`},
+   {n:40, t:"Error & Issue Management", pri:"High",
+    q:`How are errors and issues found, reported, prioritized, tracked, and resolved? What are the most common errors today, and what is the long-term plan to reduce them and improve quality?`,
+    p:`To evaluate support processes and the maturity of the implementation.`},
+   {n:41, t:"Upgrade Strategy", pri:"Medium",
+    q:`Please explain how upgrades are performed and how customizations are protected and maintained during an upgrade.`,
+    p:`To assess future maintainability.`},
+   {n:42, t:"Dependencies, Licensing & Vendor Lock-in", pri:"Critical",
+    q:`Please list all critical dependencies and required licenses (for example: Axpert, Oracle, and third-party libraries), including their cost impact. Which parts of the ERP cannot be changed without Infoway Technologies or another vendor?`,
+    p:`To understand operational costs, licensing constraints, and vendor lock-in risks.`},
+   {n:43, t:"Documentation", pri:"High",
+    q:`Please list all available technical documentation (Architecture, Database, API, Deployment, User Manuals, Workflow, ERD, and so on). Which important documents are missing, incomplete, or out of date?`,
+    p:`To assess documentation completeness and identify gaps.`}
+ ]},
+ { title: "Section 8 - User Experience", questions: [
+   {n:44, t:"User Experience (UX) & User Interface (UI)", pri:"Medium",
+    q:`Please explain the design thinking behind the current interface. Have any usability studies or user feedback sessions been done? If so, what were the findings and any planned improvements?`,
+    p:`To understand usability and find ways to improve user productivity and satisfaction.`}
+ ]},
+ { title: "Section 9 - Assessment, Risks & Recommendations", questions: [
+   {n:45, t:"Current Technical Challenges & Technical Debt", pri:"Critical",
+    q:`Please identify the most significant technical issues and technical debt in the system today. Which parts would you redesign if you could, and why?`,
+    p:`To understand existing technical debt and architectural weaknesses.`},
+   {n:46, t:"Top Technical Risks", pri:"Critical",
+    q:`What are the top technical, operational, and architectural risks that management should know about regarding the current ERP system?`,
+    p:`To surface hidden risks from the implementation team's point of view.`},
+   {n:47, t:"Architecture Suitability for Future Growth", pri:"High",
+    q:`Considering current business needs and future digital transformation goals, is the existing architecture still suitable for the long term? If not, which parts should be redesigned or modernized?`,
+    p:`To understand whether the current architecture can support the future, or whether major modernization is needed.`},
+   {n:48, t:"ERP Readiness Self-Assessment", pri:"High",
+    q:`On a scale of 1 to 10, how would you rate the current ERP in each area below? Please give a short reason for each rating: Architecture, Security, Performance, Scalability, Maintainability, Documentation, Code Quality, Database Design, User Experience, Overall ERP Readiness.`,
+    p:`To capture the team's own view of the system's maturity and find priority areas for improvement.`},
+   {n:49, t:"Knowledge Dependency & Key-Person Risk", pri:"High",
+    q:`Are there parts of the ERP that depend on specific developers or key individuals? Please identify areas where knowledge is not well documented.`,
+    p:`To assess key-person risk and knowledge transfer needs.`},
+   {n:50, t:"Recommendations", pri:"High",
+    q:`Based on your experience, what are your top recommendations to improve the system's architecture, performance, security, maintainability, and overall business value?`,
+    p:`To capture expert recommendations directly from the implementation team.`},
+   {n:51, t:"Roadmap", pri:"Medium",
+    q:`Please describe the current ERP roadmap, planned enhancements, and upcoming milestones.`,
+    p:`To understand the planned future direction.`},
+   {n:52, t:"Technical Lessons Learned", pri:"Medium",
+    q:`After years of building and supporting this ERP, what are the most important technical lessons learned? If you started again today, what would you do differently?`,
+    p:`To capture valuable experience that can guide future modernization.`},
+   {n:53, t:"Executive Technical Summary", pri:"High",
+    q:`If you had only ten minutes to brief a new ERP Technical Architect joining this project, what key facts, design decisions, limitations, and risks must they understand before working on the system?`,
+    p:`To capture the most important knowledge that may not exist in formal documents.`},
+   {n:54, t:"Additional Information", pri:"Low",
+    q:`Please share any other technical information, concerns, recommendations, or documents that would help us better understand the ERP system.`,
+    p:`To capture anything important not covered above.`},
+   {n:55, t:"Strategic Justification - Continuing with the Current ERP", pri:"Critical", images:true,
+    q:`After more than ten years of continuous development and support, the current ERP system still shows a large number of errors, bugs, and usability issues, as reflected in the screenshots above. Compared with modern ERP platforms, what is the clear technical and business justification for the company to keep investing in and operating the current system instead of modernizing or replacing it? Please explain from four perspectives: (1) Architecture and technology, (2) Cost, (3) Risk, and (4) Long-term value.`,
+    p:`To capture an honest, evidence-based justification for continuing with the current ERP, and to support a fair decision between further investment in the existing system and modernization or replacement.`}
+ ]}
+];
+
+const STATUSES = ["Completed", "Pending", "Not Applicable"];
+const PRIORITIES = ["Critical", "High", "Medium", "Low"];
+const STORAGE_KEY = "masar_erp_questionnaire_v1";
+const TOTAL = SECTIONS.reduce((a,s)=>a+s.questions.length,0);
+
+/* ---------------- Render ---------------- */
+const formEl = document.getElementById("form");
+
+function imgBlock(){
+  const fig = (arr)=>arr.map(i=>`<figure><img src="${i.src}" alt="${i.cap}" onerror="this.style.opacity=.35;this.alt='image not found';"/><figcaption>${i.cap}</figcaption></figure>`).join("");
+  return `<div class="imgwrap">
+    <div class="grouplabel">Current ERP System</div>
+    <div class="imggrid">${fig(IMAGES.current)}</div>
+    <div class="grouplabel">Modern ERP Systems (Reference)</div>
+    <div class="imggrid">${fig(IMAGES.modern)}</div>
+  </div>`;
+}
+
+SECTIONS.forEach((sec, si) => {
+  const head = document.createElement("div");
+  head.className = "section-head";
+  head.innerHTML = `<span class="sidx">${si+1}</span><h2>${sec.title}</h2>`;
+  formEl.appendChild(head);
+
+  sec.questions.forEach(q => {
+    const card = document.createElement("div");
+    card.className = "q";
+    card.id = "q" + q.n;
+    const statusSeg = STATUSES.map(s =>
+      `<label><input type="radio" name="status_${q.n}" value="${s}" ${s==='Pending'?'checked':''}/><span>${s}</span></label>`
+    ).join("");
+    card.innerHTML = `
+      <div class="q-top">
+        <span class="q-num">Q${q.n}</span>
+        <span class="q-title">${q.t}</span>
+        <span class="badge ${q.pri.toLowerCase()}">${q.pri}</span>
+      </div>
+      ${q.images ? imgBlock() : ""}
+      <div class="q-text">${q.q}</div>
+      <div class="q-purpose">Purpose: ${q.p}</div>
+      <div class="status-row"><span class="slabel">Status</span><div class="seg">${statusSeg}</div></div>
+      <div class="md-editor" data-n="${q.n}">
+        <div class="md-toolbar">
+          <button type="button" class="md-btn" data-md="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="md-btn" data-md="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="md-btn" data-md="heading" title="Heading">H</button>
+          <span class="md-div"></span>
+          <button type="button" class="md-btn" data-md="ul" title="Bullet list">&#8226; List</button>
+          <button type="button" class="md-btn" data-md="ol" title="Numbered list">1. List</button>
+          <button type="button" class="md-btn" data-md="quote" title="Quote">&ldquo; &rdquo;</button>
+          <span class="md-div"></span>
+          <button type="button" class="md-btn" data-md="code" title="Code">&lt;/&gt;</button>
+          <button type="button" class="md-btn" data-md="link" title="Link">Link</button>
+          <button type="button" class="md-btn" data-md="table" title="Table">Table</button>
+          <span class="md-spacer"></span>
+          <div class="md-tabs">
+            <button type="button" class="md-tab active" data-tab="write" title="Edit only">Edit</button>
+            <button type="button" class="md-tab" data-tab="preview" title="Edit with live preview">Preview</button>
+          </div>
+        </div>
+        <textarea class="resp" id="resp_${q.n}" placeholder="Type your answer here. Markdown is supported."></textarea>
+        <div class="md-preview" hidden>
+          <div class="md-pvhead"><span class="dot"></span> Live preview</div>
+          <div class="md-pvbody"></div>
+        </div>
+      </div>
+    `;
+    formEl.appendChild(card);
+  });
+});
+
+/* ---------------- Markdown editor ---------------- */
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function splitRow(s){ return s.replace(/^\s*\|/,"").replace(/\|\s*$/,"").split("|").map(c=>c.trim()); }
+function mdInline(str){
+  let s = esc(str);
+  const codes = [];
+  s = s.replace(/`([^`]+)`/g, (m,c)=>{ codes.push(c); return "\u0000"+(codes.length-1)+"\u0000"; });
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%"/>');
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+  s = s.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1<em>$2</em>");
+  s = s.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+  s = s.replace(/\u0000(\d+)\u0000/g, (m,i)=>"<code>"+esc(codes[i])+"</code>");
+  return s;
+}
+function mdToHtml(src){
+  const lines = (src||"").replace(/\r\n?/g,"\n").split("\n");
+  let html = "", i = 0;
+  while(i < lines.length){
+    const line = lines[i];
+    if(/^```/.test(line)){
+      const buf = []; i++;
+      while(i < lines.length && !/^```/.test(lines[i])){ buf.push(lines[i]); i++; }
+      i++;
+      html += "<pre><code>"+esc(buf.join("\n"))+"</code></pre>"; continue;
+    }
+    if(/^\s*$/.test(line)){ i++; continue; }
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){ html += "<hr/>"; i++; continue; }
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if(h){ const lv=h[1].length; html += "<h"+lv+">"+mdInline(h[2])+"</h"+lv+">"; i++; continue; }
+    if(line.includes("|") && i+1<lines.length && /-/.test(lines[i+1]) && /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i+1])){
+      const header = splitRow(line); i += 2; let rows = "";
+      while(i<lines.length && lines[i].includes("|") && lines[i].trim()!==""){
+        rows += "<tr>"+splitRow(lines[i]).map(c=>"<td>"+mdInline(c)+"</td>").join("")+"</tr>"; i++;
+      }
+      html += "<table><thead><tr>"+header.map(c=>"<th>"+mdInline(c)+"</th>").join("")+"</tr></thead><tbody>"+rows+"</tbody></table>";
+      continue;
+    }
+    if(/^\s*>/.test(line)){
+      const buf=[];
+      while(i<lines.length && /^\s*>/.test(lines[i])){ buf.push(lines[i].replace(/^\s*>\s?/,"")); i++; }
+      html += "<blockquote>"+mdToHtml(buf.join("\n"))+"</blockquote>"; continue;
+    }
+    if(/^\s*[-*+]\s+/.test(line)){
+      let items="";
+      while(i<lines.length && /^\s*[-*+]\s+/.test(lines[i])){ items += "<li>"+mdInline(lines[i].replace(/^\s*[-*+]\s+/,""))+"</li>"; i++; }
+      html += "<ul>"+items+"</ul>"; continue;
+    }
+    if(/^\s*\d+\.\s+/.test(line)){
+      let items="";
+      while(i<lines.length && /^\s*\d+\.\s+/.test(lines[i])){ items += "<li>"+mdInline(lines[i].replace(/^\s*\d+\.\s+/,""))+"</li>"; i++; }
+      html += "<ol>"+items+"</ol>"; continue;
+    }
+    const buf=[line]; i++;
+    while(i<lines.length && !/^\s*$/.test(lines[i]) && !/^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```)/.test(lines[i])){ buf.push(lines[i]); i++; }
+    html += "<p>"+mdInline(buf.join("\n")).replace(/\n/g,"<br/>")+"</p>";
+  }
+  return html;
+}
+
+function fireInput(ta){ ta.dispatchEvent(new Event("input", {bubbles:true})); ta.focus(); }
+function mdSurround(ta, before, after){
+  const s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s,e);
+  ta.setRangeText(before + sel + after, s, e, "end");
+  if(!sel){ const p = s + before.length; ta.setSelectionRange(p, p); }
+  fireInput(ta);
+}
+function mdPrefix(ta, fn){
+  const val = ta.value;
+  const ls = val.lastIndexOf("\n", ta.selectionStart-1)+1;
+  let le = val.indexOf("\n", ta.selectionEnd); if(le<0) le = val.length;
+  const out = val.slice(ls, le).split("\n").map((ln,idx)=>fn(ln, idx)).join("\n");
+  ta.setRangeText(out, ls, le, "end");
+  fireInput(ta);
+}
+function mdInsert(ta, text){
+  ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, "end");
+  fireInput(ta);
+}
+const MD_ACTIONS = {
+  bold:    ta=>mdSurround(ta,"**","**"),
+  italic:  ta=>mdSurround(ta,"*","*"),
+  heading: ta=>mdPrefix(ta, ln=> /^#{1,6}\s/.test(ln) ? ln.replace(/^#{1,6}\s/,"") : "## "+ln),
+  ul:      ta=>mdPrefix(ta, ln=> /^\s*[-*+]\s+/.test(ln) ? ln.replace(/^\s*[-*+]\s+/,"") : "- "+ln),
+  ol:      ta=>mdPrefix(ta, (ln,idx)=> /^\s*\d+\.\s+/.test(ln) ? ln.replace(/^\s*\d+\.\s+/,"") : (idx+1)+". "+ln),
+  quote:   ta=>mdPrefix(ta, ln=> /^\s*>\s?/.test(ln) ? ln.replace(/^\s*>\s?/,"") : "> "+ln),
+  code:    ta=>{ const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd); sel.includes("\n") ? mdSurround(ta,"```\n","\n```") : mdSurround(ta,"`","`"); },
+  link:    ta=>mdSurround(ta,"[","](https://)"),
+  table:   ta=>mdInsert(ta, "\n| Column 1 | Column 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |\n")
+};
+function mdRenderPreview(ed){
+  const ta = ed.querySelector("textarea.resp");
+  const body = ed.querySelector(".md-pvbody");
+  if(body) body.innerHTML = mdToHtml(ta.value);
+}
+function mdSwitchTab(tab){
+  const ed = tab.closest(".md-editor");
+  ed.querySelectorAll(".md-tab").forEach(t=>t.classList.toggle("active", t===tab));
+  const pv = ed.querySelector(".md-preview");
+  if(tab.dataset.tab === "preview"){ mdRenderPreview(ed); pv.hidden = false; ed.classList.add("previewing"); }
+  else { pv.hidden = true; ed.classList.remove("previewing"); ed.querySelector("textarea.resp").focus(); }
+}
+formEl.addEventListener("click", (ev)=>{
+  const btn = ev.target.closest(".md-btn");
+  if(btn){ ev.preventDefault(); const ed = btn.closest(".md-editor");
+    (MD_ACTIONS[btn.dataset.md]||function(){})(ed.querySelector("textarea.resp"));
+    if(ed.classList.contains("previewing")) mdRenderPreview(ed); return; }
+  const tab = ev.target.closest(".md-tab");
+  if(tab){ ev.preventDefault(); mdSwitchTab(tab); }
+});
+formEl.addEventListener("input", (ev)=>{
+  if(ev.target.classList && ev.target.classList.contains("resp")){
+    const ed = ev.target.closest(".md-editor");
+    if(ed && ed.classList.contains("previewing")) mdRenderPreview(ed);
+  }
+});
+formEl.addEventListener("keydown", (ev)=>{
+  if((ev.ctrlKey||ev.metaKey) && ev.target.classList && ev.target.classList.contains("resp")){
+    const k = ev.key.toLowerCase();
+    if(k==="b"){ ev.preventDefault(); MD_ACTIONS.bold(ev.target); }
+    else if(k==="i"){ ev.preventDefault(); MD_ACTIONS.italic(ev.target); }
+  }
+});
+
+/* ---------------- State / persistence ---------------- */
+function collect(){
+  const data = {
+    respondent: {
+      name: val("r_name"), company: val("r_company"),
+      role: val("r_role"), date: val("r_date")
+    },
+    answers: {}
+  };
+  SECTIONS.forEach(s=>s.questions.forEach(q=>{
+    data.answers[q.n] = {
+      response: document.getElementById("resp_"+q.n).value,
+      status: (document.querySelector(`input[name="status_${q.n}"]:checked`)||{}).value || "Pending"
+    };
+  }));
+  return data;
+}
+function val(id){ return document.getElementById(id).value.trim(); }
+
+function restore(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    if(d.respondent){
+      setVal("r_name", d.respondent.name); setVal("r_company", d.respondent.company);
+      setVal("r_role", d.respondent.role); setVal("r_date", d.respondent.date);
+    }
+    Object.entries(d.answers||{}).forEach(([n, a])=>{
+      const ta = document.getElementById("resp_"+n); if(ta) ta.value = a.response||"";
+      const r = document.querySelector(`input[name="status_${n}"][value="${a.status}"]`); if(r) r.checked = true;
+    });
+  } catch(e){}
+}
+function setVal(id,v){ if(v!=null) document.getElementById(id).value = v; }
+
+function updateProgress(){
+  let done = 0;
+  SECTIONS.forEach(s=>s.questions.forEach(q=>{
+    const ta = document.getElementById("resp_"+q.n);
+    const card = document.getElementById("q"+q.n);
+    if(ta.value.trim().length){ done++; card.classList.add("answered"); }
+    else card.classList.remove("answered");
+  }));
+  const pct = Math.round(done/TOTAL*100);
+  document.getElementById("progBar").style.width = pct+"%";
+  document.getElementById("progText").textContent = `${done} of ${TOTAL} answered`;
+  document.getElementById("progPct").textContent = pct+"%";
+}
+
+let saveTimer;
+function autosave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(collect())); }, 600);
+  updateProgress();
+}
+document.addEventListener("input", autosave);
+
+/* ---------------- Markdown export ---------------- */
+function box(checked){ return checked ? "\u2611" : "\u2610"; } // checked / empty box
+function priorityLine(pri){
+  return "**Priority:** " + PRIORITIES.map(p=>`${box(p===pri)} ${p}`).join(" &nbsp; ");
+}
+function statusLine(sel){
+  return "**Status:** " + STATUSES.map(s=>`${box(s===sel)} ${s}`).join(" &nbsp; ");
+}
+function imgTableMd(arr){
+  let rows = "", cols = 3;
+  for(let i=0;i<arr.length;i+=cols){
+    const cells = [];
+    for(let c=0;c<cols;c++){
+      const item = arr[i+c];
+      cells.push(item
+        ? `    <td align="center"><img src="${item.src}" width="300" /><br/><sub>${item.cap}</sub></td>`
+        : `    <td></td>`);
+    }
+    rows += `  <tr>\n${cells.join("\n")}\n  </tr>\n`;
+  }
+  return `<table>\n${rows}</table>`;
+}
+
+function buildMarkdown(){
+  const d = collect();
+  const r = d.respondent;
+  const today = r.date || new Date().toISOString().slice(0,10);
+  let md = `# ERP Technical Assessment Questionnaire - Completed Responses\n\n`;
+  md += `## Masar Petroleum ERP System\n\n`;
+  md += `**Respondent:** ${r.name || "____________________"}\n`;
+  md += `**Company:** ${r.company || "____________________"}\n`;
+  md += `**Role:** ${r.role || "____________________"}\n`;
+  md += `**Date:** ${today}\n\n`;
+  md += `---\n\n## Confidentiality Notice\n\n`;
+  md += `This questionnaire is part of the Masar Petroleum Digital Transformation initiative. The information provided will be used exclusively for technical evaluation, knowledge transfer, architecture review, and future ERP planning. All information will be treated as confidential.\n\n---\n\n`;
+
+  SECTIONS.forEach(sec=>{
+    md += `# ${sec.title}\n\n`;
+    sec.questions.forEach(q=>{
+      const a = d.answers[q.n];
+      md += `## ${q.n}. ${q.t}\n\n`;
+      md += priorityLine(q.pri) + `\n\n`;
+      if(q.images){
+        md += `**Current ERP System**\n\n${imgTableMd(IMAGES.current)}\n\n`;
+        md += `**Modern ERP Systems (Reference)**\n\n${imgTableMd(IMAGES.modern)}\n\n`;
+      }
+      md += `**Question**\n${q.q}\n\n`;
+      md += `**Purpose**\n${q.p}\n\n`;
+      md += statusLine(a.status) + `\n\n`;
+      md += `**Response**\n${a.response.trim() ? a.response.trim() : "_(no answer provided)_"}\n\n`;
+      md += `---\n\n`;
+    });
+  });
+
+  md += `# Sign-off\n\n`;
+  md += `| Name | Company | Role | Date |\n|------|---------|------|------|\n`;
+  md += `| ${r.name||""} | ${r.company||""} | ${r.role||""} | ${today} |\n\n`;
+  md += `Thank you for your support and collaboration.\n`;
+  return md;
+}
+
+function download(filename, text){
+  const blob = new Blob([text], {type:"text/markdown;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+/* ---------------- Print helpers ---------------- */
+function expandTextareasForPrint(on){
+  document.querySelectorAll("textarea.resp").forEach(ta=>{
+    if(on){
+      ta.dataset.h = ta.style.height || "";
+      ta.style.height = "auto";
+      ta.style.height = (ta.scrollHeight + 4) + "px";
+    } else {
+      ta.style.height = ta.dataset.h || "";
+    }
+  });
+}
+function waitForImages(){
+  const imgs = Array.from(document.images).filter(i=>!i.complete);
+  if(!imgs.length) return Promise.resolve();
+  return Promise.all(imgs.map(i=>new Promise(res=>{
+    i.addEventListener("load", res, {once:true});
+    i.addEventListener("error", res, {once:true});
+  })));
+}
+function doPrint(){
+  waitForImages().then(()=>{
+    expandTextareasForPrint(true);
+    window.print();
+  });
+}
+window.addEventListener("beforeprint", ()=>expandTextareasForPrint(true));
+window.addEventListener("afterprint", ()=>expandTextareasForPrint(false));
+
+/* ---------------- Buttons ---------------- */
+document.getElementById("saveBtn").addEventListener("click", ()=>{
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(collect()));
+  toast("Draft saved in this browser");
+});
+document.getElementById("printBtn").addEventListener("click", doPrint);
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const d = collect();
+  const namePart = (d.respondent.company || d.respondent.name || "Masar").replace(/[^\w\-]+/g,"_");
+  const datePart = d.respondent.date || new Date().toISOString().slice(0,10);
+  download(`ERP Technical Assessment - ${namePart} - ${datePart}.md`, buildMarkdown());
+  toast("Markdown file downloaded");
+});
+
+/* ---------------- Init ---------------- */
+document.getElementById("r_date").value = new Date().toISOString().slice(0,10);
+restore();
+updateProgress();
+window.addEventListener("beforeunload", ()=>localStorage.setItem(STORAGE_KEY, JSON.stringify(collect())));
+</script>
+</body>
+</html>
